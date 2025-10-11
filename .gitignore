@@ -22,3 +22,6 @@ Thumbs.db
 *.bak
 *~
 .aider*
+
+# GitHub Actions
+.github/

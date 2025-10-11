@@ -1,0 +1,125 @@
+name: Deploy Unity WebGL Client
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'client/**'
+      - '.github/workflows/deploy-client.yml'
+  workflow_dispatch:  # Manual trigger
+
+env:
+  SERVER_USER: "root"  # Change this to your server username if different
+  DEPLOY_PATH: "/var/www/html"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+    
+    - name: Pull LFS files
+      run: git lfs pull
+    
+    - name: Install SSH key
+      uses: shimataro/ssh-key-action@v2.6.0
+      with:
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        known_hosts: unnecessary
+        if_key_exists: replace
+    
+    - name: Add server to known_hosts
+      run: |
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+        ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+        chmod 644 ~/.ssh/known_hosts
+        chmod 600 ~/.ssh/id_rsa
+    
+    - name: Test SSH connection
+      run: |
+        echo "Testing SSH connection..."
+        ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no ${{ env.SERVER_USER }}@${{ secrets.SERVER_HOST }} "echo '✓ SSH connection successful'"
+    
+    - name: Deploy Unity WebGL client to server
+      env:
+        GHA_SERVER_HOST: ${{ secrets.SERVER_HOST }}
+      run: |
+        echo "🚀 Starting Unity WebGL deployment..."
+        echo "Repository: ${{ github.repository }}"
+        echo "Branch: ${{ github.ref_name }}"
+        echo "Deploy path: ${{ env.DEPLOY_PATH }}"
+        
+        # Create backup directory name with timestamp
+        BACKUP_NAME="client-backup-$(date +%Y%m%d-%H%M%S)"
+        
+        # Create deploy path if it doesn't exist and backup existing files
+        ssh -o StrictHostKeyChecking=no ${{ env.SERVER_USER }}@$GHA_SERVER_HOST << 'PREPARE_SCRIPT'
+        set -e
+        
+        echo "📁 Preparing deployment directory..."
+        
+        # Create deploy path if it doesn't exist
+        sudo mkdir -p ${{ env.DEPLOY_PATH }}
+        
+        # Backup existing files if they exist
+        if [ "$(ls -A ${{ env.DEPLOY_PATH }})" ]; then
+          echo "💾 Backing up existing files to /tmp/$BACKUP_NAME..."
+          sudo mkdir -p /tmp/$BACKUP_NAME
+          sudo cp -r ${{ env.DEPLOY_PATH }}/* /tmp/$BACKUP_NAME/ 2>/dev/null || true
+          echo "✓ Backup created at /tmp/$BACKUP_NAME"
+        else
+          echo "ℹ️  No existing files to backup"
+        fi
+        
+        echo "✓ Server prepared for deployment"
+        PREPARE_SCRIPT
+        
+        # Upload client files using rsync
+        echo "📤 Uploading Unity WebGL files..."
+        rsync -avz --delete \
+          -e "ssh -o StrictHostKeyChecking=no" \
+          ./client/ \
+          ${{ env.SERVER_USER }}@$GHA_SERVER_HOST:${{ env.DEPLOY_PATH }}/
+        
+        # Set proper permissions
+        ssh -o StrictHostKeyChecking=no ${{ env.SERVER_USER }}@$GHA_SERVER_HOST << 'PERMISSIONS_SCRIPT'
+        set -e
+        
+        echo "🔒 Setting proper permissions..."
+        sudo chown -R www-data:www-data ${{ env.DEPLOY_PATH }}
+        sudo chmod -R 755 ${{ env.DEPLOY_PATH }}
+        
+        echo "✓ Permissions set"
+        PERMISSIONS_SCRIPT
+        
+        # Verify deployment
+        ssh -o StrictHostKeyChecking=no ${{ env.SERVER_USER }}@$GHA_SERVER_HOST << 'VERIFY_SCRIPT'
+        set -e
+        
+        echo ""
+        echo "✅ Deployment completed successfully!"
+        echo ""
+        echo "📊 Deployment summary:"
+        echo "  Deploy path: ${{ env.DEPLOY_PATH }}"
+        echo "  Files deployed:"
+        ls -lh ${{ env.DEPLOY_PATH }} | head -20
+        
+        if [ -f "${{ env.DEPLOY_PATH }}/index.html" ]; then
+          echo ""
+          echo "✓ index.html found - Unity WebGL build deployed successfully"
+        else
+          echo ""
+          echo "⚠️  WARNING: index.html not found in deploy path"
+        fi
+        
+        echo ""
+        echo "🌐 Unity WebGL client should now be accessible via your web server"
+        VERIFY_SCRIPT
+        
+        echo ""
+        echo "🎉 Deployment process complete!"
