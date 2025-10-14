@@ -48,6 +48,7 @@
     <type fullname="FishNet.Component.Observing.MatchCondition" preserve="all" />
     <type fullname="FishNet.Component.Observing.SceneCondition" preserve="all" />
     <type fullname="FishNet.Component.Spawning.PlayerSpawner" preserve="all" />
+    <type fullname="FishNet.Component.Utility.PingDisplay" preserve="all" />
     <type fullname="FishNet.Managing.Client.ClientManager" preserve="all" />
     <type fullname="FishNet.Managing.Debugging.DebugManager" preserve="all" />
     <type fullname="FishNet.Managing.NetworkManager" preserve="all" />
