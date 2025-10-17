@@ -2,7 +2,6 @@
   <assembly fullname="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
     <type fullname="_CyberPoker.Scripts.Core.Managers.CustomNetworkHudCanvases" preserve="all" />
     <type fullname="CardSO" preserve="all" />
-    <type fullname="CardVisualsManager" preserve="all" />
     <type fullname="CommunityCards" preserve="all" />
     <type fullname="CyberPoker.Core.Gameplay.Card.CardBehaviour" preserve="all" />
     <type fullname="CyberPoker.Core.Gameplay.Card.CardsHolder" preserve="all" />
@@ -12,6 +11,7 @@
     <type fullname="CyberPoker.Core.Gameplay.Server.ServerConnectionManager" preserve="all" />
     <type fullname="CyberPoker.Core.Gameplay.Server.ServerManager" preserve="all" />
     <type fullname="CyberPoker.Core.Gameplay.Table.BetManager" preserve="all" />
+    <type fullname="CyberPoker.Core.Gameplay.Table.CardVisualsManager" preserve="all" />
     <type fullname="CyberPoker.Core.Gameplay.Table.DealerManager" preserve="all" />
     <type fullname="CyberPoker.Core.Gameplay.Table.SeatController" preserve="all" />
     <type fullname="CyberPoker.Core.Gameplay.Table.SeatEntry" preserve="all" />
@@ -19,7 +19,7 @@
     <type fullname="CyberPoker.Core.Gameplay.Table.TableController" preserve="all" />
     <type fullname="CyberPoker.Core.Gameplay.Table.TableManager" preserve="all" />
     <type fullname="CyberPoker.Core.Gameplay.Table.TableReconnectionController" preserve="all" />
-    <type fullname="CyberPoker.Core.Gameplay.Table.TableStateManager" preserve="all" />
+    <type fullname="CyberPoker.Core.Gameplay.Table.TableStateController" preserve="all" />
     <type fullname="CyberPoker.Core.Gameplay.Table.TurnManager" preserve="all" />
     <type fullname="CyberPoker.Core.Gameplay.Table.UITableSelector" preserve="all" />
     <type fullname="CyberPoker.Core.Gameplay.UI.UIPot" preserve="all" />
